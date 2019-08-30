@@ -22,11 +22,11 @@ pip install -r requirements.txt
 Follow https://www.digitalocean.com/community/tutorials/how-to-install-apache-kafka-on-ubuntu-18-04
 #### Windows 
 Follow https://medium.com/@shaaslam/installing-apache-kafka-on-windows-495f6f2fd3c8
-#### Max
+#### MacOS
 Follow https://medium.com/pharos-production/apache-kafka-macos-installation-guide-a5a3754f09c
 
 ### Running the module
-Install dependancies given in requirements.txt. You may add your dependancies in this file for you module
+Install dependancies given in requirements.txt. All all module dependancies in this file
 ```bash
 pip install -r requirements.txt
 ```
