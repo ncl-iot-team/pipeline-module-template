@@ -17,7 +17,7 @@ Install dependancies given in requirements.txt. You may add your dependancies in
 ```bash
 pip install -r requirements.txt
 ```
-### Install an run Kafka Broker
+### Install and run Kafka Broker
 #### Ubuntu 18.04
 Follow https://www.digitalocean.com/community/tutorials/how-to-install-apache-kafka-on-ubuntu-18-04
 #### Windows 
