@@ -26,7 +26,7 @@ Follow https://medium.com/@shaaslam/installing-apache-kafka-on-windows-495f6f2fd
 Follow https://medium.com/pharos-production/apache-kafka-macos-installation-guide-a5a3754f09c
 
 ### Running the module
-Install dependancies given in requirements.txt. All all module dependancies in this file
+Install dependancies given in requirements.txt. Add all module dependancies in this file
 ```bash
 pip install -r requirements.txt
 ```
