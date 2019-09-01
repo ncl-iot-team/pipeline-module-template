@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from kafka import KafkaConsumer, KafkaProducer
 import json
 import os
+import LEWSJsonUtil as util
 
 
 #--------------- Template Code, Avoid changing anything in this section --------------------------# 
@@ -24,10 +25,15 @@ class AbstractKafkaInStreamProcessor(ABC):
     def kafka_in_stream_processor(self) -> None:
 
         for message in self.consumer:
+            
+            try:
+                self.processed_record = self.process_data(message)
+                self.produce_data_kafka(self.processed_record)
+            except:
+                print("Skipping Record..")
+
         
-            self.processed_record = self.process_data(message)
-        
-            self.produce_data_kafka(self.processed_record)
+            
 
 
 
@@ -74,13 +80,31 @@ def run(abstract_class: AbstractKafkaInStreamProcessor) -> None:
 class ConKafkaInStreamProcessor(AbstractKafkaInStreamProcessor):
 
      def process_data(self,message) -> None:
+#------------------- Add module Logic in this section ---------------------#
+        try:
+            #-- Perform all the module logic here --#
 
-        #Do Processing
-#-- Perform all the module logic here --#
-        #Return processed json string
-        processes_message = message.value
+            # To get value from a field (Example)
+            util.json_util = util.JsonDataUtil(message.value)
+            
 
+            tweet_text = util.json_util.get_value("text")
+            #Do Processing
+
+            #Adding metadata to the record (Example)
+            util.json_util.add_metadata("Latitude","54.978252")
+            util.json_util.add_metadata("Longitude","-1.617780")
+
+        except:
+            print("Invalid Tweet Record.. Skipping")
+            raise
+
+        #Get the processed record with metadata added
+        processes_message = util.json_util.get_json() 
+#---------------------- Add module logic in this section (End) ----------------------#
         return processes_message
+
+
 
 
 
