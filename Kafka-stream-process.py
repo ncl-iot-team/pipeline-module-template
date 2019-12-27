@@ -3,9 +3,6 @@ from kafka import KafkaConsumer, KafkaProducer
 import json
 import os
 import LEWSJsonUtil as util
-from pprint import pprint
-import csv
-import re
 
 
 #--------------- Template Code, Avoid changing anything in this section --------------------------# 
@@ -78,44 +75,25 @@ def run(abstract_class: AbstractKafkaInStreamProcessor) -> None:
 #-------------------------Template Code Ends Here ------------------------------------#
 
 
+
+
 class ConKafkaInStreamProcessor(AbstractKafkaInStreamProcessor):
 
      def process_data(self,message) -> None:
 #------------------- Add module Logic in this section ---------------------#
         try:
-            list1 = []
-            list2 = []
-            list3 = []
-            list4 = []
-            with open('User classification data.csv','r')as f:
-                reader = csv.reader(f, delimiter=",")
-                for i, line in enumerate(reader):
-                    if(i==1):
-                        list1 = line
-                    elif(i==2):
-                        list2 = line
-                    elif(i==3):
-                        list3 = line
-                    else:
-                        list4 = line
-
+            #-- Perform all the module logic here --#
 
             # To get value from a field (Example)
             util.json_util = util.JsonDataUtil(message.value)
             
 
             tweet_text = util.json_util.get_value("text")
-            get_user = util.json_util.get_value("user")
-            data = get_user["screen_name"]
             #Do Processing
-            if(data in list1):
-                util.json_util.add_metadata("User classification","news_agencies")
-            elif(data in list2):
-                util.json_util.add_metadata("User classification","govt_agencies")
-            elif(data in list2):
-                util.json_util.add_metadata("User classification","ngo")
-            elif(data in list2):
-                util.json_util.add_metadata("User classification","other")
+
+            #Adding metadata to the record (Example)
+            util.json_util.add_metadata("Latitude","54.978252")
+            util.json_util.add_metadata("Longitude","-1.617780")
 
         except:
             print("Invalid Tweet Record.. Skipping")
