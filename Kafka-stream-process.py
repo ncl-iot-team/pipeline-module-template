@@ -46,16 +46,17 @@ class AbstractKafkaInStreamProcessor(ABC):
         
         self.target_topic = target_topic
         
-        self.bootstrap_servers = os.getenv('KAFKA_BROKER','host.docker.internal:9092')
+        self.bootstrap_servers_in = os.getenv('KAFKA_BROKER_IN','host.docker.internal:9092')
+        self.bootstrap_servers_out = os.getenv('KAFKA_BROKER_OUT','host.docker.internal:9092')
         #self.bootstrap_servers = 'localhost:9092'
         
         print("Initializing Kafka In-Stream Processor Module")
         
-        self.consumer = KafkaConsumer(source_topic,group_id = self.processor_name, bootstrap_servers = self.bootstrap_servers,value_deserializer=lambda m: json.loads(m.decode('utf-8')))
+        self.consumer = KafkaConsumer(source_topic,group_id = self.processor_name, bootstrap_servers = self.bootstrap_servers_in,value_deserializer=lambda m: json.loads(m.decode('utf-8')))
 
        # self.producer = KafkaProducer(bootstrap_servers=self.bootstrap_servers)
 
-        self.producer = KafkaProducer(bootstrap_servers=self.bootstrap_servers, value_serializer = lambda v: json.dumps(v).encode('utf-8'))
+        self.producer = KafkaProducer(bootstrap_servers=self.bootstrap_servers_out, value_serializer = lambda v: json.dumps(v).encode('utf-8'))
 
 
 
@@ -84,7 +85,7 @@ class ConKafkaInStreamProcessor(AbstractKafkaInStreamProcessor):
         try:
             #-- Perform all the module logic here --#
 
-            # To get value from a field (Example)
+            # To get value from a field (Example)z
             util.json_util = util.JsonDataUtil(message.value)
             
 
@@ -92,15 +93,17 @@ class ConKafkaInStreamProcessor(AbstractKafkaInStreamProcessor):
             #Do Processing
 
             #Adding metadata to the record (Example)
-            util.json_util.add_metadata("Latitude","54.978252")
-            util.json_util.add_metadata("Longitude","-1.617780")
+            util.json_util.add_metadata("mentions",'{"Latitude": 34.3434, "Longitude": 42.534}')
+            #util.json_util.add_metadata("Longitude","-1.617780")
 
-        except:
-            print("Invalid Tweet Record.. Skipping")
+        except Exception as ex:
+            print("Invalid Tweet Record.. Skipping", ex)
             raise
 
         #Get the processed record with metadata added
         processes_message = util.json_util.get_json() 
+
+        print("Processed Data:",json.dumps(processes_message))
 #---------------------- Add module logic in this section (End) ----------------------#
         return processes_message
 
