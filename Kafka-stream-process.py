@@ -39,12 +39,12 @@ class AbstractKafkaInStreamProcessor(ABC):
 
     def kafka_in_stream_processor(self) -> None:
 
-        for message in self.consumer:            
-            #try:
+        for message in self.consumer:
+            try:
                 self.processed_record = self.process_data(message)
                 self.produce_data_kafka(self.processed_record)
-            #except:
-            #    print("Skipping Record..")
+            except:
+                print("Skipping Record..")
 
 
     def __init__(self):
@@ -85,7 +85,7 @@ class ConKafkaInStreamProcessor(AbstractKafkaInStreamProcessor):
     
     def process_data(self,message) -> None:
 #------------------- Add module Logic in this section ---------------------#
-        #try:
+        try:
             #-- Perform all the module logic here --#
 
             # To get value from a field (Example)z
@@ -102,15 +102,15 @@ class ConKafkaInStreamProcessor(AbstractKafkaInStreamProcessor):
             json_util.add_metadata("lews_meta_test",'{"Test1": 34.3434, "Test2": 42.534}')
             #util.json_util.add_metadata("Longitude","-1.617780")
 
-        #except Exception as ex:
-        #    print("Invalid Tweet Record.. Skipping", ex)
-        #    raise
+        except Exception as ex:
+            print("Invalid Tweet Record.. Skipping", ex)
+            raise
 
         #Get the processed record with metadata added
-            processes_message = json_util.get_json()
-            print("Processing done, Attaching sample metadata")
+        processes_message = json_util.get_json()
+        print("Processing done, Attaching sample metadata")
 #---------------------- Add module logic in this section (End) ----------------------#
-            return processes_message
+        return processes_message
 
 
 
