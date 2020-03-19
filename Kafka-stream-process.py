@@ -5,58 +5,56 @@ import os
 import LEWSJsonUtil as util
 
 
+kafka_src_server = os.environ.get("KAFKA_SOURCE_BOOTSTRAP_SERVERS","localhost:9092").split(",")
+kafka_src_topic = os.environ.get('KAFKA_SOURCE_TOPIC', 't_topic1')
+kafka_tgt_server = os.environ.get("KAFKA_TARGET_BOOTSTRAP_SERVERS","localhost:9092").split(",")
+kafka_tgt_topic = os.environ.get('KAFKA_TARGET_TOPIC','t_topic2')
+proc_name = os.environ.get('MODULE_NAME','GENERIC_MODULE')
+
+print("Environment variables:")
+print(f"KAFKA_SOURCE_BOOTSTRAP_SERVERS = {kafka_src_server}")
+print(f"KAFKA_SOURCE_TOPIC = {kafka_src_topic}")
+print(f"KAFKA_TARGET_BOOTSTRAP_SERVERS = {kafka_tgt_server}")
+print(f"KAFKA_TARGET_TOPIC = {kafka_tgt_topic}")
+print(f"MODULE_NAME = {proc_name}")
+
 #--------------- Template Code, Avoid changing anything in this section --------------------------# 
 class AbstractKafkaInStreamProcessor(ABC):
         
     def produce_data_kafka(self,record) -> None:
-      
-      self.producer.send(topic=self.target_topic,value=record)
-      #print("Processed Record Sent")
+      self.producer.send(topic=kafka_tgt_topic, value=record)
+
+
+    @abstractmethod
+    def init_hook(self) -> None:
+        return null
 
 
 
     @abstractmethod
-    def process_data(self,record) -> None:
-        
+    def process_data(self,record) -> None:        
         return record
 
 
 
     def kafka_in_stream_processor(self) -> None:
 
-        for message in self.consumer:
-            
-            try:
+        for message in self.consumer:            
+            #try:
                 self.processed_record = self.process_data(message)
                 self.produce_data_kafka(self.processed_record)
-            except:
-                print("Skipping Record..")
-
-        
-            
+            #except:
+            #    print("Skipping Record..")
 
 
+    def __init__(self):
 
+        print("Initializing Kafka Consumer")        
+        self.consumer = KafkaConsumer(kafka_src_topic, group_id = proc_name, bootstrap_servers = kafka_src_server,value_deserializer=lambda m: json.loads(m.decode('utf-8')))
 
-    def __init__(self,processor_name,source_topic,target_topic):
+        print("Initializing Kafka Producer") 
+        self.producer = KafkaProducer(bootstrap_servers = kafka_tgt_server, value_serializer = lambda v: json.dumps(v).encode('utf-8'))
 
-        self.processor_name = processor_name
-        
-        self.source_topic = source_topic
-        
-        self.target_topic = target_topic
-        
-        self.bootstrap_servers_in = os.getenv('KAFKA_BROKER_IN','host.docker.internal:9092')
-        self.bootstrap_servers_out = os.getenv('KAFKA_BROKER_OUT','host.docker.internal:9092')
-        #self.bootstrap_servers = 'localhost:9092'
-        
-        print("Initializing Kafka In-Stream Processor Module")
-        
-        self.consumer = KafkaConsumer(source_topic,group_id = self.processor_name, bootstrap_servers = self.bootstrap_servers_in,value_deserializer=lambda m: json.loads(m.decode('utf-8')))
-
-       # self.producer = KafkaProducer(bootstrap_servers=self.bootstrap_servers)
-
-        self.producer = KafkaProducer(bootstrap_servers=self.bootstrap_servers_out, value_serializer = lambda v: json.dumps(v).encode('utf-8'))
 
 
 
@@ -80,44 +78,41 @@ def run(abstract_class: AbstractKafkaInStreamProcessor) -> None:
 
 class ConKafkaInStreamProcessor(AbstractKafkaInStreamProcessor):
 
-     def process_data(self,message) -> None:
+    def init_hook(self):
+        self.new_list
+
+    
+    
+    def process_data(self,message) -> None:
 #------------------- Add module Logic in this section ---------------------#
-        try:
+        #try:
             #-- Perform all the module logic here --#
 
             # To get value from a field (Example)z
-            util.json_util = util.JsonDataUtil(message.value)
+            json_util = util.JsonDataUtil(message.value)
             
 
-            tweet_text = util.json_util.get_value("text")
+            tweet_text = json_util.get_value("text")
+
+            json_util.retain_fields(["created_at","id","text","user","place"])
             #Do Processing
 
             #Adding metadata to the record (Example)
-            util.json_util.add_metadata("mentions",'{"Latitude": 34.3434, "Longitude": 42.534}')
+        
+            json_util.add_metadata("lews_meta_test",'{"Test1": 34.3434, "Test2": 42.534}')
             #util.json_util.add_metadata("Longitude","-1.617780")
 
-        except Exception as ex:
-            print("Invalid Tweet Record.. Skipping", ex)
-            raise
+        #except Exception as ex:
+        #    print("Invalid Tweet Record.. Skipping", ex)
+        #    raise
 
         #Get the processed record with metadata added
-        processes_message = util.json_util.get_json() 
-
-        print("Processed Data:",json.dumps(processes_message))
+            processes_message = json_util.get_json()
+            print("Processing done, Attaching sample metadata")
 #---------------------- Add module logic in this section (End) ----------------------#
-        return processes_message
-
-
+            return processes_message
 
 
 
 if __name__ == "__main__":
-
-    #processor_name: Unique processor name for the module, 
-    #source_topic: Topic from which the module should accept the record to be processed, 
-    # target_topic: Topic to which the module publishes the processed record
-   s_topic = os.getenv('MODULE_SRC_TOPIC','lews-twitter')
-   t_topic = os.getenv('MODULE_TGT_TOPIC','t_topic')
-   proc_name = os.getenv('MODULE_NAME','Module01')  
-   
-   run(ConKafkaInStreamProcessor(processor_name=proc_name, source_topic=s_topic, target_topic=t_topic))
+   run(ConKafkaInStreamProcessor())
